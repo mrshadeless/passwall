@@ -8,6 +8,8 @@ CYAN='\033[0;36m'
 GRAY='\033[0;37m'
 NC='\033[0m' # No Color
 
+
+
 echo "Running as root..."
 sleep 2
 clear
@@ -32,22 +34,6 @@ uci commit
 
 /sbin/reload_config
 
-SNNAP=`grep -o SNAPSHOT /etc/openwrt_release | sed -n '1p'`
-
-if [ "$SNNAP" == "SNAPSHOT" ]; then
-
-echo -e "${YELLOW} SNAPSHOT Version Detected ! ${NC}"
-
-rm -f passwalls.sh && wget https://raw.githubusercontent.com/amirhosseinchoghaei/Passwall/main/passwalls.sh && chmod 777 passwalls.sh && sh passwalls.sh
-
-exit 1
-
- else
-           
-echo -e "${GREEN} Updating Packages ... ${NC}"
-
-fi
-
 ### Update Packages ###
 
 opkg update
@@ -58,19 +44,22 @@ wget -O passwall.pub https://master.dl.sourceforge.net/project/openwrt-passwall-
 
 opkg-key add passwall.pub
 
+
 >/etc/opkg/customfeeds.conf
 
-read release arch << EOF
-$(. /etc/openwrt_release ; echo ${DISTRIB_RELEASE%.*} $DISTRIB_ARCH)
+read arch << EOF
+$(. /etc/openwrt_release ; echo $DISTRIB_ARCH)
 EOF
 for feed in passwall_luci passwall_packages passwall2; do
-  echo "src/gz $feed https://master.dl.sourceforge.net/project/openwrt-passwall-build/releases/packages-$release/$arch/$feed" >> /etc/opkg/customfeeds.conf
+  echo "src/gz $feed https://master.dl.sourceforge.net/project/openwrt-passwall-build/snapshots/packages/$arch/$feed" >> /etc/opkg/customfeeds.conf
 done
 
 ### Install package ###
 
 opkg update
-sleep 3
+
+echo -e "${GREEN} INSTALLING PASSWALL.2 FOR SNAPSHOT . ${NC}"
+
 opkg remove dnsmasq
 sleep 3
 opkg install dnsmasq-full
@@ -79,9 +68,23 @@ opkg install unzip
 sleep 2
 opkg install luci-app-passwall2
 sleep 3
-opkg install kmod-nft-socket
+opkg install ipset
 sleep 2
-opkg install kmod-nft-tproxy
+opkg install ipt2socks
+sleep 2
+opkg install iptables
+sleep 2
+opkg install iptables-legacy
+sleep 2
+opkg install iptables-mod-conntrack-extra
+sleep 2
+opkg install iptables-mod-iprange
+sleep 2
+opkg install iptables-mod-socket
+sleep 2
+opkg install iptables-mod-tproxy
+sleep 2
+opkg install kmod-ipt-nat
 sleep 2
 opkg install ca-bundle
 sleep 1
@@ -92,14 +95,25 @@ sleep 1
 opkg install kmod-netlink-diag
 sleep 1
 opkg install kmod-tun
-sleep 1
-opkg install mc
+
+echo -e "${GREEN}Done ! ${NC}"
+
+
+>/etc/banner
+
+echo "    ___    __  ___________  __  ______  __________ ___________   __
+   /   |  /  |/  /  _/ __ \/ / / / __ \/ ___/ ___// ____/  _/ | / /
+  / /| | / /|_/ // // /_/ / /_/ / / / /\__ \\__ \ / __/  / //  |/ /
+ / ___ |/ /  / // // _  _/ __  / /_/ /___/ /__/ / /____/ // /|  /
+/_/  |_/_/  /_/___/_/ |_/_/ /_/\____//____/____/_____/___/_/ |_/                                                                                                
+telegram : @AmirHosseinTSL" >> /etc/banner
 
 sleep 1
 
-RESULT5=`ls /etc/init.d/passwall2`
 
-if [ "$RESULT5" == "/etc/init.d/passwall2" ]; then
+RESULT=`ls /etc/init.d/passwall2`
+
+if [ "$RESULT" == "/etc/init.d/passwall2" ]; then
 
 echo -e "${GREEN} Passwall.2 Installed Successfully ! ${NC}"
 
@@ -127,30 +141,22 @@ exit 1
 fi
 
 
+
 ####install_xray
 opkg install xray-core
-
-sleep 2
 
 RESULT=`ls /usr/bin/xray`
 
 if [ "$RESULT" == "/usr/bin/xray" ]; then
 
-echo -e "${GREEN} XRAY : OK ! ${NC}"
+echo -e "${GREEN} Xray : OK ${NC}"
 
  else
-
- echo -e "${YELLOW} XRAY : NOT INSTALLED X ${NC}"
-
- sleep 2
- 
- echo -e "${YELLOW} Trying to install Xray on temp Space ... ${NC}"
-
- sleep 2
-  
+           
 rm -f amirhossein.sh && wget https://raw.githubusercontent.com/amirhosseinchoghaei/mi4agigabit/main/amirhossein.sh && chmod 777 amirhossein.sh && sh amirhossein.sh
 
 fi
+
 
 
 ####improve
@@ -164,11 +170,6 @@ unzip -o iam.zip -d /
 cd
 
 ########
-
-
-uci set system.@system[0].zonename='Asia/Tehran'
-
-uci set system.@system[0].timezone='<+0330>-3:30'
 
 
 uci set passwall2.@global_forwarding[0]=global_forwarding
@@ -217,37 +218,26 @@ uci set passwall2.myshunt.Direct='_direct'
 
 uci commit passwall2
 
+uci set system.@system[0].zonename='Asia/Tehran'
+
+uci set system.@system[0].timezone='<+0330>-3:30'
 
 uci commit system
 
-echo -e "${YELLOW} WiFi SSID : Freedom ${ENDCOLOR}"
 
-echo -e "${GREEN} WiFi Key : 10203040 ${ENDCOLOR}"
-
-echo -e "${GREEN} Please change the WiFi Key later. ${ENDCOLOR}"
-
-echo -e "${YELLOW}** NEW IP ADDRESS : 192.168.27.1 **${ENDCOLOR}"
+echo -e "${YELLOW} WiFi SSID : VPN 2G ${ENDCOLOR}"
+echo -e "${GREEN} Password : 10203040 ${ENDCOLOR}"
+echo -e "${YELLOW} WiFi SSID : VPN 5G ${ENDCOLOR}"
+echo -e "${GREEN} Password : 10203040 ${ENDCOLOR}"
 
 echo -e "${YELLOW}** Warning : ALL Settings Will be Change in 10 Seconds ** ${ENDCOLOR}"
 
+echo -e "${MAGENTA} Made With Love By : AmirHossein ${ENDCOLOR}"
+
 sleep 10
 
-uci set system.@system[0].hostname=OpenWRT-Passwall
-
-uci commit system
-
-
-uci set network.lan.proto='static'
-uci set network.lan.netmask='255.255.255.0'
-uci set network.lan.ipaddr='192.168.27.1'
-uci set network.lan.delegate='0'
-
-
-uci commit network
-
-
 uci delete wireless.radio0.disabled='1'
-uci set wireless.default_radio0.ssid='Freedom'
+uci set wireless.default_radio0.ssid='VPN 2G'
 uci set wireless.default_radio0.encryption='psk2+ccmp'
 uci set wireless.default_radio0.key='10203040'
 uci set wireless.default_radio0.mode='ap'
@@ -255,27 +245,30 @@ uci set wireless.default_radio0.network='lan'
 
 uci commit wireless
 
+uci set system.@system[0].hostname=By-AmirHossein
+
+uci commit system
+
+uci set network.lan.proto='static'
+uci set network.lan.netmask='255.255.255.0'
+uci set network.lan.ipaddr='192.168.27.1'
+uci set network.lan.delegate='0'
+
+uci commit network
+
 uci set dhcp.@dnsmasq[0].rebind_domain='www.ebanksepah.ir 
 my.irancell.ir'
-
-
-uci commit
 
 uci commit
 
 echo -e "${YELLOW}** Warning : Router Will Be Reboot ... After That Login With New IP Address : 192.168.27.1 ** ${ENDCOLOR}"
 
-echo -e "${YELLOW} WiFi SSID : Freedom ${ENDCOLOR}"
+echo -e "${YELLOW} WiFi SSID : VPN 2G ${ENDCOLOR}"
+
 echo -e "${GREEN} WiFi Key : 10203040 ${ENDCOLOR}"
 
 sleep 5
 
+rm passwalls.sh
+
 reboot
-
-rm passwall2x.sh
-
-rm passwallx.sh
-
-/sbin/reload_config
-
-/etc/init.d/network reload_config
