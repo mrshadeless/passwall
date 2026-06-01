@@ -183,6 +183,30 @@ geosite:category-ir'
 uci set passwall2.myshunt.Direct='_direct'
 
 # -------------------------------
+# Custom Passwall2 Status Page
+# -------------------------------
+
+echo -e "${GREEN}Installing custom Passwall2 status page...${NC}"
+
+STATUS_DIR="/usr/lib/lua/luci/view/passwall2/global"
+STATUS_FILE="$STATUS_DIR/status.htm"
+BACKUP_FILE="$STATUS_DIR/status.htm.bak"
+
+if [ -f "$STATUS_FILE" ]; then
+    cp "$STATUS_FILE" "$BACKUP_FILE"
+fi
+
+wget -O "$STATUS_FILE" \
+https://raw.githubusercontent.com/mrshadeless/passwall/refs/heads/main/status.htm
+
+if [ -f "$STATUS_FILE" ]; then
+    echo -e "${GREEN}Custom status.htm installed successfully.${NC}"
+else
+    echo -e "${RED}Failed to install custom status.htm.${NC}"
+    exit 1
+fi
+
+# -------------------------------
 # Commit Config
 # -------------------------------
 
