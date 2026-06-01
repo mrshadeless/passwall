@@ -1,186 +1,144 @@
-#!/bin/bash
+#!/bin/sh
+# Freedom Passwall2 Installer for OpenWrt
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-GRAY='\033[0;37m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-echo "Running as root..."
-sleep 2
-clear
+set -u
 
+say_ok() { echo -e "${GREEN}$1${NC}"; }
+say_warn() { echo -e "${YELLOW}$1${NC}"; }
+say_err() { echo -e "${RED}$1${NC}"; }
+
+require_root() {
+    if [ "$(id -u)" != "0" ]; then
+        say_err "Please run as root."
+        exit 1
+    fi
+}
+
+install_pkg() {
+    pkg="$1"
+    say_warn "Installing $pkg..."
+    opkg install "$pkg"
+}
+
+require_root
+
+say_ok "Running Freedom Passwall2 installer..."
+sleep 1
+
+# Basic system settings
 uci set system.@system[0].zonename='Asia/Tehran'
-
-uci set network.wan.peerdns="0"
-
-uci set network.wan6.peerdns="0"
-
-uci set network.wan.dns='1.1.1.1'
-
-uci set network.wan6.dns='2001:4860:4860::8888'
-
 uci set system.@system[0].timezone='<+0330>-3:30'
+uci set system.@system[0].hostname='WRT-Freedom'
+
+# WAN DNS settings
+uci set network.wan.peerdns='0' 2>/dev/null || true
+uci set network.wan6.peerdns='0' 2>/dev/null || true
+uci set network.wan.dns='1.1.1.1' 2>/dev/null || true
+uci set network.wan6.dns='2001:4860:4860::8888' 2>/dev/null || true
 
 uci commit system
-
-uci commit network
-
-uci commit
-
+uci commit network 2>/dev/null || true
 /sbin/reload_config
 
-SNNAP=`grep -o SNAPSHOT /etc/openwrt_release | sed -n '1p'`
-
-if [ "$SNNAP" == "SNAPSHOT" ]; then
-
-echo -e "${YELLOW} SNAPSHOT Version Detected ! ${NC}"
-
-rm -f passwalls.sh && wget https://raw.githubusercontent.com/amirhosseinchoghaei/Passwall/main/passwalls.sh && chmod 777 passwalls.sh && sh passwalls.sh
-
-exit 1
-
- else
-           
-echo -e "${GREEN} Updating Packages ... ${NC}"
-
+# Do not try unsupported snapshot installer
+SNAP="$(grep -o SNAPSHOT /etc/openwrt_release 2>/dev/null | sed -n '1p')"
+if [ "$SNAP" = "SNAPSHOT" ]; then
+    say_err "SNAPSHOT build detected. This custom installer is for stable OpenWrt releases only."
+    exit 1
 fi
 
-### Update Packages ###
+say_ok "Updating package lists..."
+opkg update || exit 1
 
-opkg update
+# Add Passwall feeds
+say_ok "Adding Passwall feeds..."
+wget -O /tmp/passwall.pub https://master.dl.sourceforge.net/project/openwrt-passwall-build/passwall.pub || exit 1
+opkg-key add /tmp/passwall.pub || exit 1
 
-### Add Src ###
+cp /etc/opkg/customfeeds.conf /etc/opkg/customfeeds.conf.bak 2>/dev/null || true
+: > /etc/opkg/customfeeds.conf
 
-wget -O passwall.pub https://master.dl.sourceforge.net/project/openwrt-passwall-build/passwall.pub
-
-opkg-key add passwall.pub
-
->/etc/opkg/customfeeds.conf
-
-read release arch << EOF
+read release arch <<FEEDINFO
 $(. /etc/openwrt_release ; echo ${DISTRIB_RELEASE%.*} $DISTRIB_ARCH)
-EOF
+FEEDINFO
+
 for feed in passwall_luci passwall_packages passwall2; do
-  echo "src/gz $feed https://master.dl.sourceforge.net/project/openwrt-passwall-build/releases/packages-$release/$arch/$feed" >> /etc/opkg/customfeeds.conf
+    echo "src/gz $feed https://master.dl.sourceforge.net/project/openwrt-passwall-build/releases/packages-$release/$arch/$feed" >> /etc/opkg/customfeeds.conf
 done
 
-### Install package ###
+opkg update || exit 1
 
-opkg update
-sleep 3
-opkg remove dnsmasq
-sleep 3
-opkg install dnsmasq-full
-sleep 2
-opkg install unzip
-sleep 2
-opkg install luci-app-passwall2
-sleep 3
-opkg install kmod-nft-socket
-sleep 2
-opkg install kmod-nft-tproxy
-sleep 2
-opkg install ca-bundle
-sleep 1
-opkg install kmod-inet-diag
-sleep 1
-opkg install kernel
-sleep 1
-opkg install kmod-netlink-diag
-sleep 1
-opkg install kmod-tun
-sleep 1
-opkg install mc
-
-sleep 1
-
-RESULT5=`ls /etc/init.d/passwall2`
-
-if [ "$RESULT5" == "/etc/init.d/passwall2" ]; then
-
-echo -e "${GREEN} Passwall.2 Installed Successfully ! ${NC}"
-
- else
-
- echo -e "${RED} Can not Download Packages ... Check your internet Connection . ${NC}"
-
- exit 1
-
+# Replace dnsmasq with dnsmasq-full
+if opkg list-installed | grep -q '^dnsmasq '; then
+    say_warn "Replacing dnsmasq with dnsmasq-full..."
+    opkg remove dnsmasq --force-depends
 fi
 
+install_pkg dnsmasq-full
+install_pkg wget-ssl
+install_pkg unzip
+install_pkg ca-bundle
+install_pkg kmod-nft-socket
+install_pkg kmod-nft-tproxy
+install_pkg kmod-inet-diag
+install_pkg kmod-netlink-diag
+install_pkg kmod-tun
+install_pkg ipset
+install_pkg luci-app-passwall2
+install_pkg xray-core
 
-DNS=`ls /usr/lib/opkg/info/dnsmasq-full.control`
+# Banner
+cat > /etc/banner <<'BANNER'
+ ______ _____  ______ ______ _____   ____  __  __
+|  ____|  __ \|  ____|  ____|  __ \ / __ \|  \/  |
+| |__  | |__) | |__  | |__  | |  | | |  | | \  / |
+|  __| |  _  /|  __| |  __| | |  | | |  | | |\/| |
+| |    | | \ \| |____| |____| |__| | |__| | |  | |
+|_|    |_|  \_\______|______|_____/ \____/|_|  |_|
 
-if [ "$DNS" == "/usr/lib/opkg/info/dnsmasq-full.control" ]; then
+BANNER
 
-echo -e "${GREEN} dnsmaq-full Installed successfully ! ${NC}"
-
- else
-           
-echo -e "${RED} Package : dnsmasq-full not installed ! (Bad internet connection .) ${NC}"
-
-exit 1
-
+# Verify important files
+if [ -f /etc/init.d/passwall2 ]; then
+    say_ok "Passwall2 installed successfully."
+else
+    say_err "Passwall2 was not installed. Check internet/repository compatibility."
+    exit 1
 fi
 
-
-####install_xray
-opkg install xray-core
-
-sleep 2
-
-RESULT=`ls /usr/bin/xray`
-
-if [ "$RESULT" == "/usr/bin/xray" ]; then
-
-echo -e "${GREEN} XRAY : OK ! ${NC}"
-
- else
-
- echo -e "${YELLOW} XRAY : NOT INSTALLED X ${NC}"
-
- sleep 2
- 
- echo -e "${YELLOW} Trying to install Xray on temp Space ... ${NC}"
-
- sleep 2
-  
-rm -f amirhossein.sh && wget https://raw.githubusercontent.com/amirhosseinchoghaei/mi4agigabit/main/amirhossein.sh && chmod 777 amirhossein.sh && sh amirhossein.sh
-
+if [ -f /usr/lib/opkg/info/dnsmasq-full.control ]; then
+    say_ok "dnsmasq-full installed successfully."
+else
+    say_err "dnsmasq-full was not installed."
+    exit 1
 fi
 
+if [ -x /usr/bin/xray ] || [ -f /usr/bin/xray ]; then
+    say_ok "Xray installed successfully."
+else
+    say_warn "Xray not found after opkg install."
+fi
 
-####improve
+# Optional external improve package disabled by default
+# The original installer downloaded https://amir3.space/iam.zip and extracted it into /.
+# That is intentionally disabled here for safety.
 
-cd /tmp
-
-wget -q https://amir3.space/iam.zip
-
-unzip -o iam.zip -d /
-
-cd
-
-########
-
-
-uci set system.@system[0].zonename='Asia/Tehran'
-
-uci set system.@system[0].timezone='<+0330>-3:30'
-
-
-uci set passwall2.@global_forwarding[0]=global_forwarding
+# Passwall2 defaults
+uci set passwall2.@global_forwarding[0]=global_forwarding 2>/dev/null || true
 uci set passwall2.@global_forwarding[0].tcp_no_redir_ports='disable'
 uci set passwall2.@global_forwarding[0].udp_no_redir_ports='disable'
 uci set passwall2.@global_forwarding[0].tcp_redir_ports='1:65535'
 uci set passwall2.@global_forwarding[0].udp_redir_ports='1:65535'
 uci set passwall2.@global[0].remote_dns='8.8.4.4'
 
-uci set passwall2.Direct=shunt_rules
+uci set passwall2.Direct='shunt_rules'
 uci set passwall2.Direct.network='tcp,udp'
-uci set passwall2.Direct.remarks='IRAN'
+uci set passwall2.Direct.remarks='IRAN / Private Direct'
 uci set passwall2.Direct.ip_list='0.0.0.0/8
 10.0.0.0/8
 100.64.0.0/10
@@ -210,72 +168,19 @@ fc00::/7
 fe80::/10
 ff00::/8
 geoip:ir'
+
 uci set passwall2.Direct.domain_list='regexp:^.+\.ir$
 geosite:category-ir'
+uci set passwall2.myshunt.Direct='_direct' 2>/dev/null || true
 
-uci set passwall2.myshunt.Direct='_direct'
+# DNS rebind exceptions
+uci set dhcp.@dnsmasq[0].rebind_domain='www.ebanksepah.ir my.irancell.ir'
 
 uci commit passwall2
-
-
+uci commit dhcp
 uci commit system
-
-echo -e "${YELLOW} WiFi SSID : Freedom ${ENDCOLOR}"
-
-echo -e "${GREEN} WiFi Key : 10203040 ${ENDCOLOR}"
-
-echo -e "${GREEN} Please change the WiFi Key later. ${ENDCOLOR}"
-
-echo -e "${YELLOW}** NEW IP ADDRESS : 192.168.27.1 **${ENDCOLOR}"
-
-echo -e "${YELLOW}** Warning : ALL Settings Will be Change in 10 Seconds ** ${ENDCOLOR}"
-
-sleep 10
-
-uci set system.@system[0].hostname=OpenWRT-Passwall
-
-uci commit system
-
-
-uci set network.lan.proto='static'
-uci set network.lan.netmask='255.255.255.0'
-uci set network.lan.ipaddr='192.168.27.1'
-uci set network.lan.delegate='0'
-
-
-uci commit network
-
-
-uci delete wireless.radio0.disabled='1'
-uci set wireless.default_radio0.ssid='Freedom'
-uci set wireless.default_radio0.encryption='psk2+ccmp'
-uci set wireless.default_radio0.key='10203040'
-uci set wireless.default_radio0.mode='ap'
-uci set wireless.default_radio0.network='lan'
-
-uci commit wireless
-
-uci set dhcp.@dnsmasq[0].rebind_domain='www.ebanksepah.ir 
-my.irancell.ir'
-
-
 uci commit
-
-uci commit
-
-echo -e "${YELLOW}** Warning : Router Will Be Reboot ... After That Login With New IP Address : 192.168.27.1 ** ${ENDCOLOR}"
-
-echo -e "${YELLOW} WiFi SSID : Freedom ${ENDCOLOR}"
-echo -e "${GREEN} WiFi Key : 10203040 ${ENDCOLOR}"
-
-sleep 5
-
-reboot
-
-rm passwall2x.sh
-
-rm passwallx.sh
-
 /sbin/reload_config
 
-/etc/init.d/network reload_config
+say_ok "** Freedom Passwall2 installation completed **"
+rm -f passwall2x.sh passwallx.sh 2>/dev/null || true
