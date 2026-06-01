@@ -31,11 +31,15 @@ uci set system.@system[0].zonename='Asia/Tehran'
 uci set system.@system[0].timezone='<+0330>-3:30'
 uci set system.@system[0].hostname='WRT-Freedom'
 
-uci set network.wan.peerdns='0'
-uci set network.wan6.peerdns='0'
+# Use DNS provided by upstream/peer
+ uci set network.wan.peerdns='1' 
+ uci set network.wan6.peerdns='1'
 
-uci set network.wan.dns='1.1.1.1'
-uci set network.wan6.dns='2001:4860:4860::8888'
+# Use Custom DNS 
+#uci set network.wan.peerdns='0'
+#uci set network.wan6.peerdns='0'
+#uci set network.wan.dns='1.1.1.1'
+#uci set network.wan6.dns='2001:4860:4860::8888'
 
 uci commit system
 uci commit network
@@ -167,24 +171,16 @@ uci set passwall2.@global_forwarding[0].udp_no_redir_ports='disable'
 uci set passwall2.@global_forwarding[0].tcp_redir_ports='1:65535'
 uci set passwall2.@global_forwarding[0].udp_redir_ports='1:65535'
 
-uci set passwall2.@global[0].remote_dns='8.8.4.4'
+uci set passwall2.@global[0].remote_dns='8.8.8.8'
 
 uci set passwall2.Direct='shunt_rules'
 uci set passwall2.Direct.network='tcp,udp'
 uci set passwall2.Direct.remarks='IRAN'
-
 uci set passwall2.Direct.ip_list='geoip:ir'
-
 uci set passwall2.Direct.domain_list='regexp:^.+\.ir$
 geosite:category-ir'
 
 uci set passwall2.myshunt.Direct='_direct'
-
-# -------------------------------
-# DNS Rebind Exceptions
-# -------------------------------
-
-uci set dhcp.@dnsmasq[0].rebind_domain='www.ebanksepah.ir my.irancell.ir'
 
 # -------------------------------
 # Commit Config
