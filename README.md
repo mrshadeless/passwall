@@ -1,5 +1,5 @@
-# passwall
-Passwall Installation
+# passwall2
+Passwall2 Installation
 
 Run this command in openwrt remote ssh
 ```
