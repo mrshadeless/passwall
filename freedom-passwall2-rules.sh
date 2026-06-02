@@ -1,4 +1,3 @@
-```sh
 #!/bin/sh
 
 RED='\033[0;31m'
@@ -279,4 +278,3 @@ uci commit passwall2
 /etc/init.d/passwall2 restart >/dev/null 2>&1
 
 echo -e "${GREEN}Freedom Passwall2 rules applied successfully.${NC}"
-```
