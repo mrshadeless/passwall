@@ -246,3 +246,8 @@ echo ""
 echo -e "${GREEN}=========================================="
 echo "  PASSWALL2 INSTALLATION COMPLETED"
 echo "==========================================${NC}"
+
+echo -e "${YELLOW}Rebooting router in 5 seconds...${NC}"
+
+sleep 5
+reboot
