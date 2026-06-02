@@ -1,4 +1,3 @@
-```sh
 #!/bin/sh
 
 # ==========================================
@@ -234,5 +233,3 @@ echo ""
 echo -e "${CYAN}Hostname:${NC} WRT-Freedom"
 echo -e "${CYAN}Access:${NC} Services -> Passwall2"
 echo ""
-
-```
