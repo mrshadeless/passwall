@@ -57,26 +57,21 @@ if [ "$SNAP" = "SNAPSHOT" ]; then
 fi
 
 # -------------------------------
-# Package Update
-# -------------------------------
-
-echo -e "${GREEN}Updating package lists...${NC}"
-
-opkg update || {
-    echo -e "${RED}opkg update failed.${NC}"
-    exit 1
-}
-
-# -------------------------------
 # Add Passwall Feed
 # -------------------------------
 
 echo -e "${GREEN}Adding Passwall feeds...${NC}"
 
-wget -O /tmp/passwall.pub \
-https://master.dl.sourceforge.net/project/openwrt-passwall-build/passwall.pub
+wget -O /tmp/ipk.pub \
+https://master.dl.sourceforge.net/project/openwrt-passwall-build/ipk.pub || {
+    echo -e "${RED}Failed to download Passwall public key.${NC}"
+    exit 1
+}
 
-opkg-key add /tmp/passwall.pub
+opkg-key add /tmp/ipk.pub || {
+    echo -e "${RED}Failed to add Passwall public key.${NC}"
+    exit 1
+}
 
 cp /etc/opkg/customfeeds.conf \
 /etc/opkg/customfeeds.conf.bak 2>/dev/null
@@ -89,13 +84,18 @@ echo ${DISTRIB_RELEASE%.*} $DISTRIB_ARCH)
 EOF
 
 for feed in passwall_luci passwall_packages passwall2; do
-    echo "src/gz $feed \
-https://master.dl.sourceforge.net/project/openwrt-passwall-build/releases/packages-$release/$arch/$feed" \
->> /etc/opkg/customfeeds.conf
+    echo "src/gz $feed https://master.dl.sourceforge.net/project/openwrt-passwall-build/releases/packages-$release/$arch/$feed" \
+    >> /etc/opkg/customfeeds.conf
 done
 
+# -------------------------------
+# Package Update
+# -------------------------------
+
+echo -e "${GREEN}Updating package lists...${NC}"
+
 opkg update || {
-    echo -e "${RED}Feed update failed.${NC}"
+    echo -e "${RED}opkg update failed.${NC}"
     exit 1
 }
 
