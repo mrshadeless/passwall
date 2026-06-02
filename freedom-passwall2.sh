@@ -19,11 +19,11 @@ echo "=========================================="
 echo -e "${NC}"
 
 . /etc/openwrt_release
-EPOL=`cat /tmp/sysinfo/model`
+EPOL="$(cat /tmp/sysinfo/model 2>/dev/null)"
 echo " - Model : $EPOL"
 echo " - System Ver : $DISTRIB_RELEASE"
 echo " - System Arch : $DISTRIB_ARCH"
-sleep 2
+sleep 5
 
 # -------------------------------
 # System Configuration
