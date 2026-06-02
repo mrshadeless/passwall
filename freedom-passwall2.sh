@@ -18,6 +18,10 @@ echo "      FREEDOM PASSWALL2 INSTALLER"
 echo "=========================================="
 echo -e "${NC}"
 
+EPOL=`cat /tmp/sysinfo/model`
+echo " - Model : $EPOL"
+echo " - System Ver : $DISTRIB_RELEASE"
+echo " - System Arch : $DISTRIB_ARCH"
 sleep 2
 
 # -------------------------------
@@ -62,13 +66,13 @@ fi
 
 echo -e "${GREEN}Adding Passwall feeds...${NC}"
 
-wget -O /tmp/ipk.pub \
-https://master.dl.sourceforge.net/project/openwrt-passwall-build/ipk.pub || {
+wget -O /tmp/passwall.pub \
+https://master.dl.sourceforge.net/project/openwrt-passwall-build/passwall.pub || {
     echo -e "${RED}Failed to download Passwall public key.${NC}"
     exit 1
 }
 
-opkg-key add /tmp/ipk.pub || {
+opkg-key add /tmp/passwall.pub || {
     echo -e "${RED}Failed to add Passwall public key.${NC}"
     exit 1
 }
@@ -121,6 +125,7 @@ kmod-nft-tproxy
 kmod-inet-diag
 kmod-netlink-diag
 kmod-tun
+mc
 "
 
 for pkg in $PACKAGES; do
