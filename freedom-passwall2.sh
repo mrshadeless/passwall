@@ -211,7 +211,7 @@ https://raw.githubusercontent.com/mrshadeless/passwall/main/freedom-passwall2-ru
 chmod +x /root/freedom-passwall2-rules.sh
 
 # Run rules script
-/root/freedom-passwall2-rules.sh
+#/root/freedom-passwall2-rules.sh
 
 # -------------------------------
 # Commit Config
