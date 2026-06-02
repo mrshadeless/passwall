@@ -179,6 +179,7 @@ uci set passwall2.Direct.ip_list='geoip:ir'
 uci set passwall2.Direct.domain_list='regexp:^.+\.ir$
 geosite:category-ir'
 
+uci set passwall2.myshunt='shunt'
 uci set passwall2.myshunt.Direct='_direct'
 
 # -------------------------------
@@ -206,6 +207,23 @@ else
 fi
 
 # -------------------------------
+# Setting Rules
+# -------------------------------
+
+echo -e "${GREEN}Downloading snd Setting rules...${NC}"
+
+wget -O /root/freedom-passwall2-rules.sh \
+https://raw.githubusercontent.com/mrshadeless/passwall/main/freedom-passwall2-rules.sh || {
+    echo -e "${RED}Failed to download rules script.${NC}"
+    exit 1
+}
+
+chmod +x /root/freedom-passwall2-rules.sh
+
+# Run rules script
+/root/freedom-passwall2-rules.sh
+
+# -------------------------------
 # Commit Config
 # -------------------------------
 
@@ -228,8 +246,3 @@ echo ""
 echo -e "${GREEN}=========================================="
 echo "  PASSWALL2 INSTALLATION COMPLETED"
 echo "==========================================${NC}"
-
-echo ""
-echo -e "${CYAN}Hostname:${NC} WRT-Freedom"
-echo -e "${CYAN}Access:${NC} Services -> Passwall2"
-echo ""
