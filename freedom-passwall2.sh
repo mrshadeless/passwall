@@ -160,27 +160,17 @@ EOF
 # Passwall2 Configuration
 # -------------------------------
 
-echo -e "${GREEN}Applying Passwall2 configuration...${NC}"
+echo -e "${GREEN}Applying Passwall2 base configuration...${NC}"
+
+uci set passwall2.@global[0].enabled='1'
+uci set passwall2.@global[0].remote_dns='8.8.8.8'
+uci set passwall2.@global[0].dns_redirect='0'
 
 uci set passwall2.@global_forwarding[0]=global_forwarding
-
 uci set passwall2.@global_forwarding[0].tcp_no_redir_ports='disable'
 uci set passwall2.@global_forwarding[0].udp_no_redir_ports='disable'
-
 uci set passwall2.@global_forwarding[0].tcp_redir_ports='1:65535'
 uci set passwall2.@global_forwarding[0].udp_redir_ports='1:65535'
-
-uci set passwall2.@global[0].remote_dns='8.8.8.8'
-
-uci set passwall2.Direct='shunt_rules'
-uci set passwall2.Direct.network='tcp,udp'
-uci set passwall2.Direct.remarks='IRAN'
-uci set passwall2.Direct.ip_list='geoip:ir'
-uci set passwall2.Direct.domain_list='regexp:^.+\.ir$
-geosite:category-ir'
-
-uci set passwall2.myshunt='shunt'
-uci set passwall2.myshunt.Direct='_direct'
 
 # -------------------------------
 # Custom Passwall2 Status Page
