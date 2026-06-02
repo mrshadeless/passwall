@@ -67,13 +67,13 @@ fi
 
 echo -e "${GREEN}Adding Passwall feeds...${NC}"
 
-wget -O /tmp/passwall.pub \
+wget -O /tmp/ipk.pub \
 https://master.dl.sourceforge.net/project/openwrt-passwall-build/ipk.pub || {
     echo -e "${RED}Failed to download Passwall public key.${NC}"
     exit 1
 }
 
-opkg-key add /tmp/passwall.pub || {
+opkg-key add /tmp/ipk.pub || {
     echo -e "${RED}Failed to add Passwall public key.${NC}"
     exit 1
 }
