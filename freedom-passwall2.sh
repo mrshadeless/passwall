@@ -18,6 +18,7 @@ echo "      FREEDOM PASSWALL2 INSTALLER"
 echo "=========================================="
 echo -e "${NC}"
 
+. /etc/openwrt_release
 EPOL=`cat /tmp/sysinfo/model`
 echo " - Model : $EPOL"
 echo " - System Ver : $DISTRIB_RELEASE"
