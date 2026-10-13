@@ -12,9 +12,18 @@ Passwall Rules Creation Separately (Not necessary if you use Passwall Installati
 
 Run this command in openwrt remote ssh
 ```
-rm -f freedom-passwall2.sh && wget https://github.com/mrshadeless/passwall/raw/main/freedom-passwall2-rules.sh && chmod 777 freedom-passwall2-rules.sh && sh freedom-passwall2-rules.sh
+rm -f freedom-passwall2-rules.sh && wget https://github.com/mrshadeless/passwall/raw/main/freedom-passwall2-rules.sh && chmod 777 freedom-passwall2-rules.sh && sh freedom-passwall2-rules.sh
 ```
 Done !
+
+# passwall Status Page
+
+Run this command in openwrt remote ssh
+```
+rm -f freedom-passwall2-status.sh && wget https://github.com/mrshadeless/passwall/raw/main/freedom-passwall2-status.sh && chmod 777 freedom-passwall2-status.sh && sh freedom-passwall2-status.sh
+```
+Done !
+
 
 
 # Help
