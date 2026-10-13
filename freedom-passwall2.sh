@@ -18,7 +18,12 @@ echo "      FREEDOM PASSWALL2 INSTALLER"
 echo "=========================================="
 echo -e "${NC}"
 
-sleep 2
+. /etc/openwrt_release
+EPOL="$(cat /tmp/sysinfo/model 2>/dev/null)"
+echo " - Model : $EPOL"
+echo " - System Ver : $DISTRIB_RELEASE"
+echo " - System Arch : $DISTRIB_ARCH"
+sleep 5
 
 # -------------------------------
 # System Configuration
@@ -121,6 +126,7 @@ kmod-nft-tproxy
 kmod-inet-diag
 kmod-netlink-diag
 kmod-tun
+mc
 "
 
 for pkg in $PACKAGES; do

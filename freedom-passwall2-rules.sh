@@ -38,8 +38,7 @@ done
 uci set passwall2.DNS='shunt_rules'
 uci set passwall2.DNS.remarks='DNS'
 uci set passwall2.DNS.network='tcp,udp'
-uci set passwall2.DNS.ip_list="$(cat <<'EOF'
-#Google DNS
+uci set passwall2.DNS.ip_list='#Google DNS
 8.8.4.4
 8.8.8.8
 #Open DNS
@@ -63,9 +62,7 @@ uci set passwall2.DNS.ip_list="$(cat <<'EOF'
 2001:4860:4860::8844
 #Cloudflare IPv6 DNS
 2606:4700:4700::1111
-2606:4700:4700::1001
-EOF
-)"
+2606:4700:4700::1001'
 
 # -------------------------------
 # Private IPs Rule
@@ -74,8 +71,7 @@ EOF
 uci set passwall2.PrivateIPs='shunt_rules'
 uci set passwall2.PrivateIPs.remarks='PrivateIPs'
 uci set passwall2.PrivateIPs.network='tcp,udp'
-uci set passwall2.PrivateIPs.ip_list="$(cat <<'EOF'
-0.0.0.0/8
+uci set passwall2.PrivateIPs.ip_list='0.0.0.0/8
 10.0.0.0/8
 100.64.0.0/10
 127.0.0.0/8
@@ -102,9 +98,7 @@ uci set passwall2.PrivateIPs.ip_list="$(cat <<'EOF'
 2002::/16
 fc00::/7
 fe80::/10
-ff00::/8
-EOF
-)"
+ff00::/8'
 
 # -------------------------------
 # IRAN Rule
@@ -114,18 +108,15 @@ uci set passwall2.IRAN='shunt_rules'
 uci set passwall2.IRAN.remarks='IRAN'
 uci set passwall2.IRAN.protocol='bittorrent'
 uci set passwall2.IRAN.network='tcp,udp'
-uci set passwall2.IRAN.domain_list="$(cat <<'EOF'
-30nama.com
+uci set passwall2.IRAN.domain_list='30nama.com
 onlinedigi.top
 deserver.top
 masoudsajadi.com
 dgmovie.fun
 regexp:^digimoviez.*\.top$
 regexp:^.+\.ir$
-geosite:ir
-EOF
-)"
-uci set passwall2.IRAN.ip_list="$(cat <<'EOF'
+geosite:ir'
+uci set passwall2.IRAN.ip_list='
 #BPI / Arvan
 185.143.235.201
 185.143.232.201
@@ -134,9 +125,7 @@ uci set passwall2.IRAN.ip_list="$(cat <<'EOF'
 104.28.243.190
 #Digimovie
 185.137.24.14
-geoip:ir
-EOF
-)"
+geoip:ir'
 
 # -------------------------------
 # Direct Game Rule
@@ -145,15 +134,11 @@ EOF
 uci set passwall2.DirectGame='shunt_rules'
 uci set passwall2.DirectGame.remarks='DirectGame'
 uci set passwall2.DirectGame.network='tcp,udp'
-uci set passwall2.DirectGame.domain_list="$(cat <<'EOF'
-api.steampowered.com
+uci set passwall2.DirectGame.domain_list='api.steampowered.com
 regexp:\.cm.steampowered.com$
 regexp:\.steamserver.net$
-geosite:category-games@cn
-EOF
-)"
-uci set passwall2.DirectGame.ip_list="$(cat <<'EOF'
-103.10.124.0/24
+geosite:category-games@cn'
+uci set passwall2.DirectGame.ip_list='103.10.124.0/24
 103.10.125.0/24
 103.28.54.0/24
 146.66.152.0/24
@@ -198,9 +183,7 @@ uci set passwall2.DirectGame.ip_list="$(cat <<'EOF'
 208.64.201.0/24
 208.64.202.0/24
 208.64.203.0/24
-208.78.164.0/22
-EOF
-)"
+208.78.164.0/22'
 
 # -------------------------------
 # QUIC Rule
